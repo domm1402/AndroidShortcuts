@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AutomationScheduler.sync(this, readItems())
         setContent {
             var items by remember { mutableStateOf(readItems()) }
             var page by remember { mutableStateOf("Shortcuts") }
