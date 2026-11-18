@@ -1,22 +1,19 @@
 # Android Shortcuts
 
-An Android-native visual shortcut builder inspired by the automation concepts of Apple's Shortcuts.
+A native Android shortcut builder inspired by the automation concepts of Apple's Shortcuts. This is an independent implementation, not Apple's app or source code.
+
+## Included
+- Dark and light appearance
+- Shortcut dashboard, search, starter gallery and settings
+- Visual action editor with add, edit, delete and reorder
+- Run actions in sequence
+- Local JSON persistence
+- Import and export shortcuts as JSON
+- Actions: open website, launch app by package name, show message, copy text, share text, wait, open Android settings, open dialler, web search and set alarm
+- GitHub Actions APK build on pushes to main
 
 ## Build
-Open the repository in Android Studio or run:
+Open the Actions tab and download the `AndroidShortcuts-debug` artifact from a successful run. For a local build, open the project in Android Studio or run `gradle assembleDebug`.
 
-`gradle assembleDebug`
-
-The debug APK is created at `app/build/outputs/apk/debug/app-debug.apk`.
-
-A GitHub Actions workflow builds the APK on pushes to `main` and can also be started manually from Actions.
-
-## Current actions
-- Open website
-- Open app by Android package name
-- Show an on-screen notification
-- Copy text to clipboard
-- Share text with another app
-- Wait (up to 10 seconds)
-
-Shortcuts are stored locally on the device. Android restricts background execution and access to protected system settings, so some automations require explicit Android permissions or cannot be performed silently.
+## Platform limitations
+This build executes shortcuts while the app is open. Android restricts background work, location monitoring, accessibility, notification posting and protected device settings. Scheduled/background triggers, home-screen widgets, notification permission onboarding and deeper system integrations still need implementation and testing.
