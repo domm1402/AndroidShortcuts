@@ -118,3 +118,23 @@ class AutomationReceiver : BroadcastReceiver() {
         manager.notify(id.toInt(), notification)
     }
 }
+
+class AutomationBootReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
+        val raw = context.getSharedPreferences("shortcut_store", Context.MODE_PRIVATE).getString("items", "[]") ?: "[]"
+        val items = runCatching {
+            val array = JSONArray(raw)
+            (0 until array.length()).map { i ->
+                val item = array.getJSONObject(i)
+                val stepsJson = item.optJSONArray("steps") ?: JSONArray()
+                val steps = (0 until stepsJson.length()).map { j ->
+                    val step = stepsJson.getJSONObject(j)
+                    ActionStep(step.optString("type"), step.optString("value"))
+                }
+                ShortcutItem(item.optLong("id"), item.optString("name"), steps, item.optString("trigger", "Manual"))
+            }
+        }.getOrDefault(emptyList())
+        AutomationScheduler.sync(context, items)
+    }
+}
