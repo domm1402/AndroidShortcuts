@@ -90,6 +90,7 @@ class MainActivity : ComponentActivity() {
     }.getOrDefault(emptyList())
 
     private fun writeItems(items: List<ShortcutItem>) {
+        AutomationScheduler.sync(this, items)
         val a = JSONArray()
         items.forEach { item ->
             val steps = JSONArray()
@@ -258,13 +259,13 @@ private fun MainDashboard(
                         Icon(Icons.Default.Schedule, tint = lime, contentDescription = null, modifier = Modifier.size(34.dp))
                         Spacer(Modifier.height(8.dp))
                         Text("Trigger-based automations", fontWeight = FontWeight.Bold)
-                        Text("Shortcuts can currently be launched manually. Android background schedules, location triggers and event listeners need additional permissions and system-specific handling.", color = soft)
+                        Text("Daily schedules now run through Android alarms. You can choose a time while editing a shortcut. Android may delay alarms during battery-saving periods.", color = soft)
                         Spacer(Modifier.height(10.dp))
                         Button(onClick = onCreate) { Text("Build a shortcut") }
                     }
                 }
                 Spacer(Modifier.height(12.dp))
-                items.filter { it.trigger != "Manual" }.forEach { Text(it.name + " · " + it.trigger, color = soft) }
+                items.filter { it.trigger.startsWith("Daily at ") }.forEach { Text(it.name + " · " + it.trigger, color = soft) }
             }
             else -> {
                 Text("PREFERENCES", color = soft, style = MaterialTheme.typography.labelLarge)
@@ -311,11 +312,16 @@ private fun ShortcutEditor(item: ShortcutItem, actionTypes: List<String>, onBack
         Text("WHEN SHOULD IT RUN?", color = soft, style = MaterialTheme.typography.labelLarge)
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Manual", "On a schedule").forEach { option ->
-                FilterChip(selected = trigger == option, onClick = { trigger = option }, label = { Text(option) })
-            }
+            FilterChip(selected = trigger == "Manual", onClick = { trigger = "Manual" }, label = { Text("Manual") })
+            FilterChip(selected = trigger.startsWith("Daily at "), onClick = { if (!trigger.startsWith("Daily at ")) trigger = "Daily at 09:00" }, label = { Text("Daily schedule") })
         }
-        if (trigger == "On a schedule") Text("Scheduling is a planned feature; this shortcut remains manually runnable in this build.", color = soft, style = MaterialTheme.typography.bodySmall)
+        if (trigger.startsWith("Daily at ")) {
+            OutlinedTextField(value = trigger.removePrefix("Daily at "), onValueChange = { raw ->
+                val clean = raw.filter { it.isDigit() || it == ':' }.take(5)
+                trigger = "Daily at " + clean
+            }, label = { Text("Daily time (24-hour HH:mm)") }, placeholder = { Text("09:00") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            Text("Runs every day using Android alarms. Battery saver may delay it slightly.", color = soft, style = MaterialTheme.typography.bodySmall)
+        }
         Spacer(Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("ACTIONS", color = soft, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
